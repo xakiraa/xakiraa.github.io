@@ -1,6 +1,6 @@
 # Aprende ocarina
 
-## ▶ [Abrir la herramienta](https://TUUSUARIO.github.io/NOMBRE-DEL-REPO/)
+## ▶ [Abrir la herramienta](https://xakiraa.github.io/notasocarina/)
 
 Practica las notas de tu ocarina de 12 agujeros (La – Fa, 21 notas):
 
