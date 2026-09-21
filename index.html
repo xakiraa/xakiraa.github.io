@@ -1,0 +1,594 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Aprende ocarina</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap" rel="stylesheet">
+<style>
+:root{
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  --paper:#EDF1EE; --surface:#FFFFFF; --ink:#16213A; --muted:#566076; --line:#D2D9D5;
+  --glaze:#1E7B72; --glaze-soft:#D6EAE6; --gold:#B57F00; --gold-soft:#F5E6BC; --alert:#B8443C;
+  --font:"Bricolage Grotesque",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px);height:100%}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#0E1524; --surface:#16203A; --ink:#E8EEF8; --muted:#98A4BC; --line:#2A3556;
+    --glaze:#4CC2B3; --glaze-soft:#18384A; --gold:#F0BE45; --gold-soft:#3B3216; --alert:#F0776D;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0E1524; --surface:#16203A; --ink:#E8EEF8; --muted:#98A4BC; --line:#2A3556;
+  --glaze:#4CC2B3; --glaze-soft:#18384A; --gold:#F0BE45; --gold-soft:#3B3216; --alert:#F0776D;
+}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--font);font-size:16px;line-height:1.45;-webkit-text-size-adjust:100%}
+.wrap{max-width:1040px;margin:0 auto;padding:18px 16px 40px}
+h1{font-size:clamp(28px,5vw,40px);line-height:1.05;letter-spacing:-.025em;font-weight:800;margin:0}
+.sub{margin:6px 0 0;color:var(--muted);max-width:44ch}
+.top{display:flex;gap:16px;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;margin-bottom:14px}
+.score{display:flex;gap:18px;color:var(--muted);font-size:15px}
+.score b{color:var(--ink);font-size:20px;font-weight:800;margin-left:4px;font-variant-numeric:tabular-nums}
+
+details.settings{background:var(--surface);border:1px solid var(--line);border-radius:14px;margin-bottom:16px}
+details.settings summary{cursor:pointer;padding:12px 16px;font-weight:600;list-style:none}
+details.settings summary::-webkit-details-marker{display:none}
+details.settings summary::after{content:"+";float:right;color:var(--muted);font-weight:400}
+details.settings[open] summary::after{content:"–"}
+.sgrid{display:grid;gap:14px 20px;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));padding:4px 16px 16px}
+.sgrid label{display:flex;flex-direction:column;gap:6px;font-size:14px;color:var(--muted)}
+.sgrid label.chk{flex-direction:row;align-items:center;gap:10px;color:var(--ink)}
+.sgrid label.chk input{width:20px;height:20px;accent-color:var(--glaze);flex:none}
+.sgrid output{color:var(--ink);font-weight:600}
+select,input[type=number]{font:inherit;color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+input[type=range]{width:100%;accent-color:var(--glaze)}
+
+.grid{display:grid;gap:16px;grid-template-columns:1fr}
+@media(min-width:860px){
+  .grid{grid-template-columns:1.25fr 1fr;grid-template-areas:"staff finger" "tuner finger";align-items:start}
+  .staff{grid-area:staff} .finger{grid-area:finger} .tuner{grid-area:tuner}
+}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:18px}
+.card h2{font-size:17px;font-weight:600;margin:0 0 10px;letter-spacing:-.005em}
+
+/* pentagrama */
+.staffsvg{width:100%;height:auto;display:block}
+.sl{stroke:var(--ink);stroke-width:1.2;opacity:.75}
+.clef{fill:none;stroke:var(--ink);stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.ledger{stroke:var(--ink);stroke-width:1.6}
+.notehead{fill:var(--ink);transition:fill .2s}
+.stem{stroke:var(--ink);stroke-width:2.2;transition:stroke .2s}
+.acc line{stroke:var(--ink);stroke-width:1.6;stroke-linecap:butt;transition:stroke .2s}
+.acc line.bar{stroke-width:3.4}
+.note.enter{animation:slidein .22s ease-out}
+@keyframes slidein{from{transform:translateX(26px);opacity:0}to{transform:none;opacity:1}}
+.staff.ok .notehead{fill:var(--glaze)} .staff.ok .stem,.staff.ok .acc line{stroke:var(--glaze)}
+
+.namerow{display:flex;align-items:center;gap:18px;flex-wrap:wrap;margin-top:6px}
+.badge{width:120px;height:120px;flex:none}
+.ring-bg{fill:none;stroke:var(--line);stroke-width:7}
+.ring{fill:none;stroke:var(--glaze);stroke-width:7;stroke-linecap:round;stroke-dasharray:326.7;stroke-dashoffset:326.7;transition:stroke-dashoffset .09s linear}
+.staff.ok .ring{stroke:var(--gold)}
+.badge text{font-family:var(--font);font-weight:800;font-size:34px;fill:var(--ink);letter-spacing:-.02em}
+.info{flex:1;min-width:190px}
+.info .big{font-size:22px;font-weight:600;letter-spacing:-.01em}
+.info .muted{color:var(--muted);font-size:14px}
+.btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.btn{font:inherit;font-weight:600;font-size:15px;color:var(--ink);background:transparent;border:1.5px solid var(--line);border-radius:999px;padding:9px 16px;cursor:pointer;min-height:44px}
+.btn:hover{border-color:var(--glaze)}
+.btn.primary{background:var(--glaze);border-color:var(--glaze);color:#fff}
+[data-theme="dark"] .btn.primary{color:#06231F}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .btn.primary{color:#06231F}}
+.btn[aria-pressed="true"]{background:var(--gold-soft);border-color:var(--gold)}
+button:focus-visible,summary:focus-visible,select:focus-visible,input:focus-visible,[data-hole]:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+
+/* ocarina (forma y agujeros tomados de la tabla) */
+.oc{width:100%;height:auto;display:block;max-width:440px;margin:0 auto}
+.body{fill:var(--glaze-soft);stroke:var(--ink);stroke-width:3;stroke-linejoin:round}
+.hole{fill:var(--surface);stroke:var(--ink);stroke-width:2.2;transition:fill .15s}
+.hole.closed{fill:var(--ink)}
+.edit [data-hole]{cursor:pointer}
+.edit [data-hole]:hover .hole{stroke:var(--gold);stroke-width:4}
+.legend{font-size:13px;color:var(--muted);margin:12px 0 0}
+.editnote{font-size:13px;color:var(--gold);margin:8px 0 0;font-weight:600}
+
+/* afinador */
+.tunerhead{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.read{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-top:12px;min-height:34px}
+.read #detName{font-size:26px;font-weight:800;letter-spacing:-.02em;min-width:3.6ch}
+.read span{color:var(--muted);font-size:14px;font-variant-numeric:tabular-nums}
+.gauge{position:relative;height:58px;margin:8px 0 2px}
+.gauge .track{position:absolute;left:0;right:0;top:25px;height:8px;border-radius:8px;background:var(--line)}
+.gauge .zone{position:absolute;top:19px;height:20px;border-radius:10px;background:var(--glaze-soft);border:1.5px solid var(--glaze)}
+.gauge .mid{position:absolute;left:50%;top:14px;width:2px;height:30px;margin-left:-1px;background:var(--glaze);opacity:.7}
+.gauge .needle{position:absolute;top:9px;left:50%;width:6px;height:40px;margin-left:-3px;border-radius:4px;background:var(--muted);opacity:0;transition:left .09s linear,opacity .2s,background .15s}
+.gauge .needle.on{opacity:1}
+.gauge .needle.in{background:var(--gold)}
+.gl{display:flex;justify-content:space-between;font-size:12.5px;color:var(--muted)}
+.hint{margin:12px 0 0;font-weight:600;min-height:1.5em}
+.hint.good{color:var(--gold)} .hint.warn{color:var(--alert)}
+.level{height:4px;border-radius:4px;background:var(--line);margin-top:14px;overflow:hidden}
+.level i{display:block;height:100%;width:0;background:var(--glaze);transition:width .08s linear}
+.foot{color:var(--muted);font-size:13px;margin:18px 2px 0;max-width:80ch}
+@media (prefers-reduced-motion: reduce){
+  .note.enter{animation:none}
+  .ring,.gauge .needle,.level i{transition:none}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>Aprende ocarina</h1>
+      <p class="sub">Toca la nota que ves. Sostén la nota afinada durante 5 segundos y pasas a la siguiente.</p>
+    </div>
+    <div class="score" aria-live="polite">
+      <span>Aciertos<b id="score">0</b></span>
+      <span>Racha<b id="streak">0</b></span>
+    </div>
+  </header>
+
+  <details class="settings">
+    <summary>Ajustes</summary>
+    <div class="sgrid">
+      <label>Orden de las notas
+        <select id="sMode">
+          <option value="random">Aleatorio (sin repetir hasta agotar todas)</option>
+          <option value="scale">Escala ascendente</option>
+          <option value="updown">Subir y bajar</option>
+        </select>
+      </label>
+      <label>Notas
+        <select id="sNotes">
+          <option value="all">Todas (con sostenidos)</option>
+          <option value="natural">Solo naturales</option>
+        </select>
+      </label>
+      <label>Rango
+        <select id="sRange">
+          <option value="all">Todo (La – Fa, dos octavas)</option>
+          <option value="basic">Una octava (Do – Do)</option>
+        </select>
+      </label>
+      <label>Tolerancia de afinación <output id="oTol">±30 ¢</output>
+        <input type="range" id="sTol" min="10" max="50" step="5" value="30">
+      </label>
+      <label>Tiempo que hay que sostener la nota <output id="oHold">5 s</output>
+        <input type="range" id="sHold" min="500" max="10000" step="500" value="5000">
+      </label>
+      <label>Sensibilidad del micrófono <output id="oSens">5</output>
+        <input type="range" id="sSens" min="1" max="10" step="1" value="5">
+      </label>
+      <label>Afinación de La4 (Hz)
+        <input type="number" id="sRef" min="415" max="466" step="1" value="440" inputmode="numeric">
+      </label>
+      <label class="chk"><input type="checkbox" id="sLow" checked> Escribir la nota una octava más grave que el sonido (como en la tabla)</label>
+    </div>
+  </details>
+
+  <main class="grid" id="grid">
+    <section class="card staff" id="staffCard" aria-label="Nota a tocar">
+      <svg class="staffsvg" id="staffSvg" viewBox="0 30 400 200" role="img" aria-label="Pentagrama con la nota a tocar"></svg>
+      <div class="namerow">
+        <svg class="badge" viewBox="0 0 120 120" role="img" aria-label="Nombre de la nota">
+          <circle class="ring-bg" cx="60" cy="60" r="52"/>
+          <circle class="ring" id="ring" cx="60" cy="60" r="52" transform="rotate(-90 60 60)"/>
+          <text id="badgeName" x="60" y="61" text-anchor="middle" dominant-baseline="central">Sol</text>
+        </svg>
+        <div class="info">
+          <div class="big" id="noteTitle">Sol</div>
+          <div class="muted" id="noteSub">G5 · 784 Hz</div>
+          <div class="btns">
+            <button class="btn" id="bPlay" type="button">Escuchar</button>
+            <button class="btn" id="bPrev" type="button" aria-label="Nota anterior">Anterior</button>
+            <button class="btn" id="bNext" type="button" aria-label="Saltar a la nota siguiente">Saltar</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card finger" id="fingerCard" aria-label="Posición de los dedos">
+      <div class="tunerhead">
+        <h2>Posición de los dedos</h2>
+        <button class="btn" id="bEdit" type="button" aria-pressed="false">Corregir digitación</button>
+      </div>
+      <div id="fingerWrap"></div>
+      <p class="legend">Círculo lleno = tapado · vacío = destapado. Los dos círculos pequeños son subagujeros y los dos de abajo, fuera del cuerpo, son los de los pulgares.</p>
+      <p class="editnote" id="editNote" hidden>Modo corrección: toca los agujeros para taparlos o destaparlos en esta nota.
+        <button class="btn" id="bReset" type="button" style="margin-left:6px;min-height:36px;padding:5px 12px">Restablecer esta nota</button></p>
+    </section>
+
+    <section class="card tuner" aria-label="Afinador">
+      <div class="tunerhead">
+        <h2>Afinador</h2>
+        <button class="btn primary" id="bMic" type="button">Activar micrófono</button>
+      </div>
+      <div class="read" aria-live="off">
+        <span id="detName" style="color:var(--ink)">—</span>
+        <span id="detHz"></span>
+        <span id="detCents"></span>
+      </div>
+      <div class="gauge" id="gauge" aria-hidden="true">
+        <div class="track"></div><div class="zone" id="zone"></div><div class="mid"></div><div class="needle" id="needle"></div>
+      </div>
+      <div class="gl" aria-hidden="true"><span>más grave</span><span>afinado</span><span>más agudo</span></div>
+      <p class="hint" id="hint" aria-live="polite">Activa el micrófono para que la app te escuche. Si no quieres usarlo, avanza tú con «Saltar».</p>
+      <div class="level" aria-hidden="true"><i id="lvl"></i></div>
+    </section>
+  </main>
+
+  <p class="foot">Digitaciones tomadas de la tabla de tu ocarina de 12 agujeros (21 notas, de La a Fa). Como en la tabla, la nota se escribe una octava más grave de lo que suena; las alturas que ves como «A4», «C5»… y las que mide el afinador son las del sonido real. Las correcciones que hagas se guardan en este navegador.</p>
+</div>
+
+<script>
+(() => {
+'use strict';
+const $ = s => document.querySelector(s);
+
+/* ---------- almacenamiento (con respaldo en memoria) ---------- */
+const store = (() => {
+  const mem = {};
+  return {
+    get(k){ try{ const v = localStorage.getItem(k); return v === null ? (mem[k] ?? null) : v; }catch(e){ return mem[k] ?? null; } },
+    set(k,v){ mem[k] = v; try{ localStorage.setItem(k,v); }catch(e){} }
+  };
+})();
+const secs = ms => (ms / 1000).toFixed(1).replace(/\.0$/, '') + ' s';
+const parse = (s, d) => { try{ return s ? JSON.parse(s) : d; }catch(e){ return d; } };
+
+const S = Object.assign({mode:'random', notes:'all', range:'all', tol:30, hold:5000, sens:5, refA:440, low:true},
+                        parse(store.get('oc-settings-v3'), {}));
+const overrides = parse(store.get('oc-fing-v2'), {});
+const saveSettings = () => store.set('oc-settings-v3', JSON.stringify(S));
+
+/* ---------- datos tomados de la tabla del usuario ---------- */
+// Agujeros: [x, y, radio] en el marco del diagrama (viewBox 0 0 256 158)
+const HOLES = {"a1": [26.2, 39.7, 10], "a2": [53.7, 34.2, 10], "a3": [81.2, 28.8, 10], "a4": [108.7, 23.4, 10], "s1": [53.5, 54.5, 6.9], "s2": [143.1, 34.9, 6.9], "b1": [116.4, 63.8, 10], "b2": [143.2, 55.3, 10], "b3": [169.8, 46.8, 10], "b4": [196.4, 38.1, 10], "T1": [25.2, 113.3, 10], "T2": [111.8, 113.3, 10]};
+const HID = ['a1','a2','a3','a4','s1','s2','b1','b2','b3','b4','T1','T2'];
+const HNAME = {a1:'agujero superior 1',a2:'agujero superior 2',a3:'agujero superior 3',a4:'agujero superior 4',
+               b1:'agujero inferior 1',b2:'agujero inferior 2',b3:'agujero inferior 3',b4:'agujero inferior 4',
+               s1:'subagujero 1',s2:'subagujero 2',T1:'pulgar 1',T2:'pulgar 2'};
+const BODY = 'M11.1 45.0 L12.1 50.0 L13.3 53.0 L15.7 57.0 L18.1 60.0 L21.0 63.0 L24.0 65.6 L29.0 69.3 L38.0 75.4 L43.0 79.2 L47.9 84.0 L50.1 87.0 L51.6 91.0 L52.0 94.0 L51.9 99.0 L51.1 104.0 L50.8 112.0 L49.6 117.0 L48.0 122.0 L45.2 129.0 L42.4 135.0 L41.8 137.0 L41.7 137.9 L41.9 138.8 L42.4 139.5 L44.0 140.7 L48.0 142.7 L53.0 144.8 L59.0 147.7 L60.8 148.2 L61.6 148.1 L63.0 146.9 L65.0 144.0 L68.7 138.0 L72.1 133.0 L80.4 122.0 L88.0 113.0 L105.0 96.2 L115.0 88.4 L125.0 81.7 L128.0 79.8 L139.0 73.8 L146.0 70.3 L151.0 68.2 L157.0 65.4 L185.0 54.4 L209.0 45.6 L235.0 35.4 L240.0 33.6 L241.9 32.5 L243.5 30.9 L244.3 29.0 L244.4 28.0 L244.2 27.0 L243.5 25.0 L241.6 22.2 L239.0 20.1 L236.0 18.7 L234.0 18.2 L222.0 16.2 L216.0 15.9 L211.0 15.1 L206.0 14.9 L201.0 14.1 L195.0 13.9 L191.0 13.2 L189.0 13.0 L178.0 12.9 L174.0 12.2 L172.0 12.0 L161.0 11.9 L157.0 11.2 L154.0 11.0 L101.0 11.0 L98.0 11.2 L94.0 11.9 L84.0 12.1 L79.0 12.9 L75.0 13.1 L71.0 13.8 L66.0 14.2 L63.0 14.8 L59.0 15.2 L48.0 17.4 L40.0 19.4 L30.0 22.8 L24.0 25.8 L21.0 27.7 L18.0 30.1 L15.2 33.0 L13.3 36.0 L11.5 40.0 L11.1 42.0 Z';
+// Un dígito por agujero, en el orden de HID (1 = tapado). Notas desde La4 (midi 69) hasta Fa6 (midi 89).
+const CODES = ["111111111111", "111110111111", "111101111111", "111100111111", "111101111011", "111100111011", "111100101011", "111100110011", "111100100011", "111100001011", "111100000011", "110100001011", "110100000011", "100100001011", "100100000011", "000100000011", "000100001001", "000100000001", "000100001000", "000100000000", "000000000000"];
+
+/* ---------- notas: cromático La4 – Fa6 (sonido real) ---------- */
+const LET = ['C','C','D','D','E','F','F','G','G','A','A','B'];
+const SHP = [0,1,0,1,0,0,1,0,1,0,1,0];
+const SOL = ['Do','Do♯','Re','Re♯','Mi','Fa','Fa♯','Sol','Sol♯','La','La♯','Si'];
+const FLT = ['Do','Re♭','Re','Mi♭','Mi','Fa','Sol♭','Sol','La♭','La','Si♭','Si'];
+const LIDX = {C:0,D:1,E:2,F:3,G:4,A:5,B:6};
+const NOTES = [];
+for(let m = 69; m <= 89; m++){
+  const pc = m % 12, oct = Math.floor(m / 12) - 1;
+  NOTES.push({midi:m, pc, oct, letter:LET[pc], sharp:!!SHP[pc], name:SOL[pc], flat:FLT[pc],
+              key:LET[pc] + (SHP[pc] ? '#' : '') + oct, code:CODES[m - 69]});
+}
+const freqOf = midi => S.refA * Math.pow(2, (midi - 69) / 12);
+
+function defaultClosed(n){ return new Set(HID.filter((h, i) => n.code[i] === '1')); }
+function getClosed(n){ return overrides[n.key] ? new Set(overrides[n.key]) : defaultClosed(n); }
+
+/* ---------- estado ---------- */
+let cur = NOTES[3];
+let seq = [], ptr = 0, bag = [], hist = [];
+let score = 0, streak = 0;
+let holdMs = 0, missMs = 0, lock = false, refPlaying = false;
+let editMode = false;
+
+/* ---------- pentagrama ---------- */
+const Y = p => 170 - p * 7;
+const CLEF = 'M 38 183 C 38 193, 50 194, 50 182 L 57 100 C 60 88, 67 86, 68 96 C 69 106, 50 112, 40 124 C 30 140, 38 158, 54 158 C 70 158, 74 138, 60 132 C 50 130, 44 142, 52 146';
+const sharpSvg = (x, y) =>
+  `<g class="acc"><line x1="${x-3}" y1="${y-11}" x2="${x-3}" y2="${y+13}"/><line x1="${x+3.5}" y1="${y-13}" x2="${x+3.5}" y2="${y+11}"/>` +
+  `<line class="bar" x1="${x-8}" y1="${y-1.5}" x2="${x+8.5}" y2="${y-5.5}"/><line class="bar" x1="${x-8}" y1="${y+6.5}" x2="${x+8.5}" y2="${y+2.5}"/></g>`;
+function staffPos(n){
+  const wo = n.oct - (S.low ? 1 : 0);
+  return (wo - 4) * 7 + LIDX[n.letter] - LIDX.E;
+}
+function renderStaff(n, animate){
+  const pos = staffPos(n), cx = 250, cy = Y(pos);
+  let s = '';
+  for(let k = 0; k < 5; k++) s += `<line class="sl" x1="10" x2="390" y1="${170-k*14}" y2="${170-k*14}"/>`;
+  s += `<line class="sl" x1="390" x2="390" y1="114" y2="170"/>`;
+  s += `<path class="clef" d="${CLEF}"/>`;
+  let led = '';
+  if(pos >= 10) for(let q = 10; q <= pos; q += 2) led += `<line class="ledger" x1="${cx-19}" x2="${cx+19}" y1="${Y(q)}" y2="${Y(q)}"/>`;
+  if(pos <= -2) for(let q = -2; q >= pos; q -= 2) led += `<line class="ledger" x1="${cx-19}" x2="${cx+19}" y1="${Y(q)}" y2="${Y(q)}"/>`;
+  const down = pos >= 4;
+  const sx = down ? cx - 8.7 : cx + 8.7;
+  const stem = `<line class="stem" x1="${sx}" x2="${sx}" y1="${cy}" y2="${down ? cy + 49 : cy - 49}"/>`;
+  const head = `<ellipse class="notehead" cx="${cx}" cy="${cy}" rx="10" ry="7.2" transform="rotate(-20 ${cx} ${cy})"/>`;
+  const acc = n.sharp ? sharpSvg(cx - 29, cy) : '';
+  s += `<g class="note${animate ? ' enter' : ''}">${led}${acc}${stem}${head}</g>`;
+  $('#staffSvg').innerHTML = s;
+}
+
+/* ---------- diagrama de la ocarina ---------- */
+function renderFinger(){
+  const closed = getClosed(cur);
+  let s = `<svg class="oc" viewBox="0 0 256 158" role="img" aria-label="Diagrama de la ocarina: ${closed.size} de 12 agujeros tapados">`;
+  s += `<path class="body" d="${BODY}"/>`;
+  HID.forEach(id => {
+    const [x, y, r] = HOLES[id], c = closed.has(id);
+    const tab = editMode ? ` tabindex="0" role="button" aria-pressed="${c}"` : '';
+    s += `<g data-hole="${id}"${tab} aria-label="${HNAME[id]}: ${c ? 'tapado' : 'destapado'}">` +
+         `<circle cx="${x}" cy="${y}" r="${r + 5}" fill="transparent"/>` +
+         `<circle class="hole${c ? ' closed' : ''}" cx="${x}" cy="${y}" r="${r}"/></g>`;
+  });
+  s += `</svg>`;
+  $('#fingerWrap').innerHTML = s;
+  $('#fingerWrap').classList.toggle('edit', editMode);
+}
+function toggleHole(id){
+  const c = getClosed(cur);
+  c.has(id) ? c.delete(id) : c.add(id);
+  overrides[cur.key] = Array.from(c);
+  store.set('oc-fing-v2', JSON.stringify(overrides));
+  renderFinger();
+}
+$('#fingerWrap').addEventListener('click', e => {
+  if(!editMode) return;
+  const g = e.target.closest('[data-hole]'); if(g) toggleHole(g.dataset.hole);
+});
+$('#fingerWrap').addEventListener('keydown', e => {
+  if(!editMode || (e.key !== 'Enter' && e.key !== ' ')) return;
+  const g = e.target.closest('[data-hole]'); if(g){ e.preventDefault(); toggleHole(g.dataset.hole); }
+});
+$('#bEdit').addEventListener('click', () => {
+  editMode = !editMode;
+  $('#bEdit').setAttribute('aria-pressed', editMode);
+  $('#editNote').hidden = !editMode;
+  renderFinger();
+});
+$('#bReset').addEventListener('click', () => {
+  delete overrides[cur.key];
+  store.set('oc-fing-v2', JSON.stringify(overrides));
+  renderFinger();
+});
+
+/* ---------- secuencia de notas ---------- */
+function pool(){
+  return NOTES.filter(n => (S.range === 'all' || (n.midi >= 72 && n.midi <= 84)) && (S.notes === 'all' || !n.sharp));
+}
+function shuffle(a){
+  for(let i = a.length - 1; i > 0; i--){ const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+  return a;
+}
+function nextRandom(){
+  if(!bag.length){
+    bag = shuffle(pool());
+    const last = bag.length - 1;
+    if(last > 0 && bag[last].midi === cur.midi){ const t = bag[0]; bag[0] = bag[last]; bag[last] = t; }
+  }
+  return bag.pop();
+}
+function buildSeq(){
+  const p = pool();
+  seq = S.mode === 'updown' ? p.concat(p.slice(1, -1).reverse()) : p;
+  ptr = 0;
+}
+const noteSub = n => `${n.letter}${n.sharp ? '♯' : ''}${n.oct} · ${Math.round(freqOf(n.midi))} Hz · ${n.midi >= 81 ? 'octava aguda' : 'octava grave'}`;
+function setNote(n, animate){
+  cur = n; holdMs = 0; missMs = 0;
+  $('#staffCard').classList.remove('ok');
+  renderStaff(n, animate);
+  renderFinger();
+  $('#badgeName').textContent = n.name;
+  $('#noteTitle').textContent = n.sharp ? `${n.name}  (${n.flat})` : n.name;
+  $('#noteSub').textContent = noteSub(n);
+  setRing(0);
+  if(!micOn) setHint('Activa el micrófono para que la app te escuche. Si no quieres usarlo, avanza tú con «Saltar».', '');
+}
+function advance(dir){
+  if(S.mode === 'random'){
+    if(dir === -1){ if(hist.length) setNote(hist.pop(), true); return; }
+    hist.push(cur); if(hist.length > 50) hist.shift();
+    setNote(nextRandom(), true);
+  } else {
+    ptr = (ptr + (dir || 1) + seq.length) % seq.length;
+    setNote(seq[ptr], true);
+  }
+}
+function restart(){
+  bag = []; hist = [];
+  if(S.mode === 'random') setNote(nextRandom(), false);
+  else { buildSeq(); setNote(seq[0], false); }
+}
+
+/* ---------- interfaz ---------- */
+function setRing(p){ $('#ring').style.strokeDashoffset = (326.7 * (1 - Math.min(1, p))).toFixed(1); }
+function setHint(t, cls){ const h = $('#hint'); h.textContent = t; h.className = 'hint' + (cls ? ' ' + cls : ''); }
+function updateScore(){ $('#score').textContent = score; $('#streak').textContent = streak; }
+function updateZone(){
+  const w = S.tol / 60 * 100;
+  const z = $('#zone'); z.style.left = (50 - w/2) + '%'; z.style.width = w + '%';
+}
+
+$('#bNext').addEventListener('click', () => { streak = 0; updateScore(); advance(1); });
+$('#bPrev').addEventListener('click', () => advance(-1));
+document.addEventListener('keydown', e => {
+  if(/^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName)) return;
+  if(e.key === 'ArrowRight') advance(1);
+  if(e.key === 'ArrowLeft') advance(-1);
+});
+
+/* ---------- audio ---------- */
+let ctx = null, stream = null, analyser = null, buf = null, micOn = false, raf = 0, lastTs = 0;
+const recent = [];
+function getCtx(){
+  if(!ctx){ const AC = window.AudioContext || window.webkitAudioContext; ctx = new AC(); }
+  if(ctx.state === 'suspended') ctx.resume();
+  return ctx;
+}
+$('#bPlay').addEventListener('click', () => {
+  try{
+    const ac = getCtx();
+    refPlaying = true;
+    const o = ac.createOscillator(), g = ac.createGain(), t = ac.currentTime;
+    o.type = 'sine'; o.frequency.value = freqOf(cur.midi);
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(.25, t + .04);
+    g.gain.setValueAtTime(.25, t + 1.0);
+    g.gain.linearRampToValueAtTime(0, t + 1.25);
+    o.connect(g).connect(ac.destination);
+    o.start(t); o.stop(t + 1.3);
+    o.onended = () => setTimeout(() => { refPlaying = false; }, 250);
+  }catch(e){ refPlaying = false; }
+});
+
+/* Detección de tono: YIN sobre el rango de la ocarina (≈360–1700 Hz) */
+function detect(x, sr){
+  const N = x.length;
+  let sum = 0;
+  for(let i = 0; i < N; i++) sum += x[i] * x[i];
+  const rms = Math.sqrt(sum / N);
+  const gate = 0.06 / Math.pow(1.6, S.sens - 1);
+  if(rms < gate) return {f:0, rms};
+  const W = 2048;
+  const tauMin = Math.max(2, Math.floor(sr / 1700));
+  const tauMax = Math.min(N - W - 1, Math.floor(sr / 360));
+  const cm = new Float32Array(tauMax + 2);
+  let running = 0;
+  cm[0] = 1;
+  for(let tau = 1; tau <= tauMax; tau++){
+    let d = 0;
+    for(let j = 0; j < W; j++){ const df = x[j] - x[j + tau]; d += df * df; }
+    running += d;
+    cm[tau] = running > 0 ? d * tau / running : 1;
+  }
+  let tau = -1;
+  for(let t = tauMin; t <= tauMax; t++){
+    if(cm[t] < 0.15){
+      while(t + 1 <= tauMax && cm[t + 1] < cm[t]) t++;
+      tau = t; break;
+    }
+  }
+  if(tau < 0 || tau >= tauMax) return {f:0, rms};
+  const a = cm[tau - 1], b = cm[tau], c = cm[tau + 1];
+  const den = a + c - 2 * b;
+  const shift = den !== 0 ? (a - c) / (2 * den) : 0;
+  return {f: sr / (tau + shift), rms};
+}
+function smooth(f){
+  recent.push(f); if(recent.length > 5) recent.shift();
+  const v = recent.filter(q => q > 0).sort((p, q) => p - q);
+  if(v.length < 3) return 0;
+  return v[Math.floor(v.length / 2)];
+}
+const chromName = m => { const r = Math.round(m); return `${SOL[((r % 12) + 12) % 12]} ${Math.floor(r / 12) - 1}`; };
+
+function tick(ts){
+  raf = requestAnimationFrame(tick);
+  const dt = lastTs ? Math.min(100, ts - lastTs) : 16; lastTs = ts;
+  analyser.getFloatTimeDomainData(buf);
+  const res = detect(buf, ctx.sampleRate);
+  $('#lvl').style.width = Math.min(100, res.rms * 500) + '%';
+  const f = (refPlaying || lock) ? (smooth(0), 0) : smooth(res.f);
+  const needle = $('#needle');
+  if(!f){
+    needle.classList.remove('on', 'in');
+    $('#detName').textContent = '—'; $('#detHz').textContent = ''; $('#detCents').textContent = '';
+    missMs += dt; if(missMs > 300) holdMs = 0;
+    setRing(holdMs / S.hold);
+    if(!lock && !refPlaying) setHint('Toca la nota y sostenla con un soplido suave y parejo.', '');
+    return;
+  }
+  const m = 69 + 12 * Math.log2(f / S.refA);
+  const cents = (m - cur.midi) * 100;
+  const clamp = Math.max(-60, Math.min(60, cents));
+  const ok = Math.abs(cents) <= S.tol;
+  needle.style.left = (50 + clamp / 60 * 50) + '%';
+  needle.classList.add('on'); needle.classList.toggle('in', ok);
+  $('#detName').textContent = chromName(m);
+  $('#detHz').textContent = Math.round(f) + ' Hz';
+  $('#detCents').textContent = (cents >= 0 ? '+' : '') + Math.round(cents) + ' ¢';
+  if(ok){
+    holdMs += dt; missMs = 0;
+    setHint(`¡Así! Sigue sosteniendo… ${Math.max(1, Math.ceil((S.hold - holdMs) / 1000))} s`, 'good');
+    setRing(holdMs / S.hold);
+    if(holdMs >= S.hold) success();
+  } else {
+    missMs += dt; if(missMs > 300) holdMs = 0;
+    setRing(holdMs / S.hold);
+    if(Math.abs(cents) < 100) setHint(cents < 0 ? 'Casi: un poco baja. Sopla con algo más de presión.' : 'Casi: un poco alta. Sopla más suave.', 'warn');
+    else setHint(`Suena ${chromName(m)}. Busca ${cur.name} ${cur.oct}.`, 'warn');
+  }
+}
+function success(){
+  lock = true; score++; streak++; updateScore();
+  $('#staffCard').classList.add('ok');
+  setRing(1);
+  setHint(`¡Correcto! ${cur.name} ${cur.oct}`, 'good');
+  setTimeout(() => { lock = false; advance(1); }, 650);
+}
+
+async function startMic(){
+  if(!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)){
+    setHint('Este navegador no permite usar el micrófono aquí. Puedes avanzar con «Saltar».', 'warn'); return;
+  }
+  try{
+    stream = await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false, noiseSuppression:false, autoGainControl:false}});
+  }catch(e){
+    setHint('No se pudo acceder al micrófono. Revisa el permiso del navegador para esta página.', 'warn'); return;
+  }
+  const ac = getCtx();
+  const src = ac.createMediaStreamSource(stream);
+  analyser = ac.createAnalyser(); analyser.fftSize = 4096;
+  src.connect(analyser);
+  buf = new Float32Array(analyser.fftSize);
+  micOn = true; lastTs = 0; recent.length = 0;
+  $('#bMic').textContent = 'Desactivar micrófono';
+  $('#bMic').classList.remove('primary');
+  setHint('Listo. Toca la nota y sostenla con un soplido suave y parejo.', '');
+  raf = requestAnimationFrame(tick);
+}
+function stopMic(){
+  cancelAnimationFrame(raf);
+  if(stream) stream.getTracks().forEach(t => t.stop());
+  stream = null; analyser = null; micOn = false;
+  $('#bMic').textContent = 'Activar micrófono';
+  $('#bMic').classList.add('primary');
+  $('#needle').classList.remove('on', 'in');
+  $('#detName').textContent = '—'; $('#detHz').textContent = ''; $('#detCents').textContent = '';
+  $('#lvl').style.width = '0';
+  holdMs = 0; setRing(0);
+  setHint('Micrófono apagado. Puedes avanzar con «Saltar».', '');
+}
+$('#bMic').addEventListener('click', () => micOn ? stopMic() : startMic());
+
+/* ---------- ajustes ---------- */
+function syncSettingsUI(){
+  $('#sMode').value = S.mode; $('#sNotes').value = S.notes; $('#sRange').value = S.range;
+  $('#sTol').value = S.tol; $('#oTol').textContent = `±${S.tol} ¢`;
+  $('#sHold').value = S.hold; $('#oHold').textContent = secs(S.hold);
+  $('#sSens').value = S.sens; $('#oSens').textContent = S.sens;
+  $('#sRef').value = S.refA; $('#sLow').checked = S.low;
+  updateZone();
+}
+$('#sMode').addEventListener('change', e => { S.mode = e.target.value; saveSettings(); restart(); });
+$('#sNotes').addEventListener('change', e => { S.notes = e.target.value; saveSettings(); restart(); });
+$('#sRange').addEventListener('change', e => { S.range = e.target.value; saveSettings(); restart(); });
+$('#sLow').addEventListener('change', e => { S.low = e.target.checked; saveSettings(); renderStaff(cur, false); });
+$('#sTol').addEventListener('input', e => { S.tol = +e.target.value; $('#oTol').textContent = `±${S.tol} ¢`; updateZone(); saveSettings(); });
+$('#sHold').addEventListener('input', e => { S.hold = +e.target.value; $('#oHold').textContent = secs(S.hold); saveSettings(); });
+$('#sSens').addEventListener('input', e => { S.sens = +e.target.value; $('#oSens').textContent = S.sens; saveSettings(); });
+$('#sRef').addEventListener('change', e => {
+  const v = +e.target.value;
+  S.refA = (v >= 415 && v <= 466) ? v : 440; e.target.value = S.refA;
+  saveSettings(); setNote(cur, false);
+});
+
+syncSettingsUI();
+restart();
+})();
+</script>
+</body>
+</html>
